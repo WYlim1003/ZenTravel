@@ -1,6 +1,7 @@
 import { auth, db } from './firebase';
 import { 
   createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword,
   GoogleAuthProvider, 
   signInWithPopup 
 } from 'firebase/auth';
@@ -24,6 +25,21 @@ export const registerUser = async (email: string, password: string) => {  try {
         theme: "zen-purple"
       }
     });
+
+    return user;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const loginUser = async (email: string, password: string) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    await setDoc(doc(db, "users", user.uid), {
+      lastLogin: serverTimestamp(),
+    }, { merge: true });
 
     return user;
   } catch (error) {

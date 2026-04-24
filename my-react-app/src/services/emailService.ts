@@ -13,7 +13,7 @@
  *     {{flight_number}}, {{route}}, {{recovery_actions}}, {{timestamp}}
  *     Copy the Template ID  →  VITE_EMAILJS_TEMPLATE_ID
  *  4. Dashboard → Account → Public Key  →  VITE_EMAILJS_PUBLIC_KEY
- *  5. Add all three to my-react-app/.env and restart the dev server.
+ *  5. Add all three to zentravel/.env and restart the dev server.
  */
 
 import emailjs from '@emailjs/browser';

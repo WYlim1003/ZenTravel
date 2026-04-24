@@ -6,8 +6,7 @@ import mascotImg from './assets/MASCOT-removebg-preview.png';
 import { FloatingChatWidget } from './components/FloatingChatWidget';
 
 // Services
-import { registerUser } from './services/authService'; // Ensure this is imported
-import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { loginWithGoogle } from './services/authService';
 
 // Pages
 const LandingPage = lazy(() => import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })));
@@ -38,7 +37,7 @@ import { BottomNav } from './components/BottomNav';
 import './App.css';
 
 type ViewState = 
-  | 'landing' | 'auth' | 'register' | 'home' | 'profile' 
+  | 'landing' | 'auth' | 'register' | 'login' | 'home' | 'profile' 
   | 'chatbot' | 'booking' | 'notification' | 'view-ticket' 
   | 'refund' | 'about' | 'help' 
   | 'edit-profile' | 'saved' | 'my-reviews'
@@ -55,6 +54,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [showFloatingChat, setShowFloatingChat] = useState(false);
   const [pendingSearch, setPendingSearch] = useState<{origin: string, destination: string} | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   // AUTH FORM STATES (Added to handle email login/register)
   const [email, setEmail] = useState('');
@@ -146,7 +147,21 @@ function App() {
 
   const handleSetView = (newView: ViewState | string, id: string = '') => {
     setView(newView as ViewState);
-    if (id) setSelectedTicketId(id);
+    if (id) {
+        setSelectedTicketId(id);
+    } else {
+        // If switching views via nav without an ID, we keep the existing ID 
+        // unless it's a fresh start. This allows 'view-ticket' etc to keep working.
+    }
+  };
+
+  async function handleGoogle() {
+    try { await loginWithGoogle(); setView('home'); } catch (e) { console.error(e); }
+  }
+
+  const handleAiRouting = (view: string, data: any) => {
+    setPendingSearch(data);
+    setView(view as ViewState);
   };
 
   const authenticatedViews: ViewState[] = [
@@ -235,16 +250,12 @@ function App() {
     <div className="app-container">
       {view === 'landing' && <LandingPage />}
       
-      {(view === 'auth' || view === 'register') && (
+      {(view === 'auth' || view === 'register' || view === 'login') && (
         <Suspense fallback={pageLoader}>
           <AuthPage 
-            view={view}
-            onGoogle={handleGoogleLogin} 
-            setView={setView}
+            view={view} setView={setView} onGoogle={handleGoogle} 
             onEmailClick={() => setView('register')}
-            onRegister={handleRegister} 
-            setEmail={setEmail} 
-            setPassword={setPassword}
+            onRegister={async () => {}} setEmail={() => {}} setPassword={() => {}}
           />
         </Suspense>
       )}
