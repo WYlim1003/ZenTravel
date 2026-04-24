@@ -6,7 +6,8 @@ import mascotImg from './assets/MASCOT-removebg-preview.png';
 import { FloatingChatWidget } from './components/FloatingChatWidget';
 
 // Services
-import { loginWithGoogle } from './services/authService';
+import { loginWithGoogle, registerUser } from './services/authService';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 // Pages
 const LandingPage = lazy(() => import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })));
@@ -54,10 +55,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [showFloatingChat, setShowFloatingChat] = useState(false);
   const [pendingSearch, setPendingSearch] = useState<{origin: string, destination: string} | null>(null);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
-  // AUTH FORM STATES (Added to handle email login/register)
+  // ✅ FIXED: Single declaration for email and password
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -69,7 +68,6 @@ function App() {
   const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({ MYR: 1 });
   const [globalLang, setGlobalLang] = useState('en');
 
-  // 1. Fetch Exchange Rates
   useEffect(() => {
     const fetchRates = async () => {
       try {
@@ -81,7 +79,6 @@ function App() {
     if (API_KEY) fetchRates();
   }, []);
 
-  // 2. Auth & Firestore Sync (AMENDED with Auto-Redirect)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -95,7 +92,6 @@ function App() {
             if (userData.cashbackBalance !== undefined) setCashbackBalance(userData.cashbackBalance);
           }
 
-          // REDIRECT LOGIC: If user is logged in, move them out of Auth views
           if (view === 'auth' || view === 'register' || view === 'landing') {
             setView('home');
           }
@@ -105,9 +101,8 @@ function App() {
       setLoading(false); 
     });
     return () => unsubscribe();
-  }, [view]); // Added view dependency to re-check redirection
+  }, [view]);
 
-  // 3. Landing Timer
   useEffect(() => {
     if (view === 'landing' && !loading) {
       const timer = setTimeout(() => {
@@ -119,27 +114,18 @@ function App() {
     }
   }, [view, user, authLoaded, loading]);
 
-  // NATIVE GOOGLE LOGIN (AMENDED)
-  // NATIVE GOOGLE LOGIN (Cleaned Version)
   const handleGoogleLogin = async () => {
     try {
-      await FirebaseAuthentication.signInWithGoogle({
-        mode: 'popup', 
-      });
-      // Success: The onAuthStateChanged listener in App.tsx 
-      // will automatically detect the user and setView('home')
+      await FirebaseAuthentication.signInWithGoogle({ mode: 'popup' });
     } catch (error) {
-      // We'll just log it to the console for you to see in Inspect Element
       console.error("Google Sign-In failed:", error);
     }
   };
 
-  // EMAIL REGISTRATION (AMENDED)
   const handleRegister = async (e: any) => {
     e.preventDefault();
     try {
       await registerUser(email, password);
-      // Redirection handled by useEffect
     } catch (err: any) {
       alert("Registration failed: " + err.message);
     }
@@ -147,21 +133,7 @@ function App() {
 
   const handleSetView = (newView: ViewState | string, id: string = '') => {
     setView(newView as ViewState);
-    if (id) {
-        setSelectedTicketId(id);
-    } else {
-        // If switching views via nav without an ID, we keep the existing ID 
-        // unless it's a fresh start. This allows 'view-ticket' etc to keep working.
-    }
-  };
-
-  async function handleGoogle() {
-    try { await loginWithGoogle(); setView('home'); } catch (e) { console.error(e); }
-  }
-
-  const handleAiRouting = (view: string, data: any) => {
-    setPendingSearch(data);
-    setView(view as ViewState);
+    if (id) setSelectedTicketId(id);
   };
 
   const authenticatedViews: ViewState[] = [
@@ -182,23 +154,7 @@ function App() {
     };
 
     switch (view) {
-      case 'home': return (
-        <HomePage 
-          {...commonProps} 
-          setPendingSearch={setPendingSearch} 
-          selectedId={selectedTicketId} 
-        />
-      );
-
-      case 'insurance': 
-        return (
-          <InsurancePage 
-            {...commonProps} 
-            pendingSearch={pendingSearch} 
-            clearSearch={() => setPendingSearch(null)} 
-          />
-        );
-      
+      case 'home': return <HomePage {...commonProps} setPendingSearch={setPendingSearch} selectedId={selectedTicketId} />;
       case 'profile': return (
         <ProfilePage 
           {...commonProps}
@@ -211,24 +167,9 @@ function App() {
           setCashbackBalance={setCashbackBalance}
         />
       );
-      
-      case 'hotels': return (
-        <HotelsPage 
-          {...commonProps} 
-          pendingSearch={pendingSearch} 
-          clearSearch={() => setPendingSearch(null)} 
-        />
-      );
-      
-      case 'flights': return (
-        <FlightsPage 
-          {...commonProps} 
-          pendingSearch={pendingSearch} 
-          clearSearch={() => setPendingSearch(null)} 
-        />
-      );
-      
-      case 'insurance': return <InsurancePage {...commonProps} />;
+      case 'hotels': return <HotelsPage {...commonProps} pendingSearch={pendingSearch} clearSearch={() => setPendingSearch(null)} />;
+      case 'flights': return <FlightsPage {...commonProps} pendingSearch={pendingSearch} clearSearch={() => setPendingSearch(null)} />;
+      case 'insurance': return <InsurancePage {...commonProps} pendingSearch={pendingSearch} clearSearch={() => setPendingSearch(null)} />;
       case 'tripplanner': return <TripPlannerPage {...commonProps} />;
       case 'manual-planner': return <ManualPlannerPage {...commonProps} />;
       case 'carrental': return <CarRentalPage {...commonProps} />;
@@ -253,9 +194,9 @@ function App() {
       {(view === 'auth' || view === 'register' || view === 'login') && (
         <Suspense fallback={pageLoader}>
           <AuthPage 
-            view={view} setView={setView} onGoogle={handleGoogle} 
+            view={view} setView={setView} onGoogle={handleGoogleLogin} 
             onEmailClick={() => setView('register')}
-            onRegister={async () => {}} setEmail={() => {}} setPassword={() => {}}
+            onRegister={handleRegister} setEmail={setEmail} setPassword={setPassword}
           />
         </Suspense>
       )}
@@ -263,25 +204,20 @@ function App() {
       {showNavBar && (
         <>
           <main className="main-content-area">
-            <Suspense fallback={pageLoader}>
-              {renderContent()}
-            </Suspense>
+            <Suspense fallback={pageLoader}>{renderContent()}</Suspense>
           </main>
-
           <div
             className={`persistent-chatbot-btn ${showFloatingChat ? 'persistent-chatbot-btn--active' : ''}`}
             onClick={() => setShowFloatingChat((v) => !v)}
           >
             <img src={mascotImg} alt="AI Assistant" className="persistent-chatbot-mascot" />
           </div>
-
           {showFloatingChat && (
             <FloatingChatWidget
               onClose={() => setShowFloatingChat(false)}
               onOpenFull={() => { setShowFloatingChat(false); setView('chatbot'); }}
             />
           )}
-
           <BottomNav currentView={view} setView={handleSetView} />
         </>
       )}

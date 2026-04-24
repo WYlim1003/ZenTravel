@@ -44,8 +44,9 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
   const [activeDateIndex, setActiveDateIndex] = useState(0);
 
   const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY 
+    id: 'zentravel-google-maps', // 🚀 Use this same ID everywhere
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    libraries: ['marker', 'places'], // 🚀 Keep libraries consistent
   });
 
   // 🤖 AI INTELLIGENT AUTO-SEARCH LOGIC
