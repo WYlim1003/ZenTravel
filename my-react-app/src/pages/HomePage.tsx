@@ -23,6 +23,7 @@ import tripPlannerImg from '../assets/TripPlanner_pic.png';
 
 interface HomeProps {
   setView: (v: string) => void;
+  selectedId?: string;
   globalCurrency: { name: string; code: string };
   setPendingSearch: (data: { origin: string, destination: string } | null) => void;
 }

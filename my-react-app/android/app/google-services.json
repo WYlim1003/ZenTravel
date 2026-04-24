@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "18966002960",
+    "project_id": "zentravel-c550a",
+    "storage_bucket": "zentravel-c550a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:18966002960:android:4690c6cc11affc3db13995",
+        "android_client_info": {
+          "package_name": "com.zentravel.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "18966002960-7onqku5vebe0ltakm02j0b6u4n837m6m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zentravel.app",
+            "certificate_hash": "0ea68569b05c1ddb95b0202e757f5d24d8172cc7"
+          }
+        },
+        {
+          "client_id": "18966002960-tej95kt4a9d4ed4kigfpcpa54cm4lj1o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3VWQFX8T925pb6VdeLsR9p4oWlLSSu6k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "18966002960-tej95kt4a9d4ed4kigfpcpa54cm4lj1o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

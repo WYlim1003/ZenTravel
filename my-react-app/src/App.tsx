@@ -6,7 +6,8 @@ import mascotImg from './assets/MASCOT-removebg-preview.png';
 import { FloatingChatWidget } from './components/FloatingChatWidget';
 
 // Services
-import { loginWithGoogle } from './services/authService';
+import { registerUser } from './services/authService'; // Ensure this is imported
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 // Pages
 const LandingPage = lazy(() => import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })));
@@ -34,7 +35,6 @@ const ManualPlannerPage = lazy(() => import('./pages/ManualPlannerPage').then((m
 
 // Components
 import { BottomNav } from './components/BottomNav';
-
 import './App.css';
 
 type ViewState = 
@@ -56,7 +56,10 @@ function App() {
   const [showFloatingChat, setShowFloatingChat] = useState(false);
   const [pendingSearch, setPendingSearch] = useState<{origin: string, destination: string} | null>(null);
 
-  // States
+  // AUTH FORM STATES (Added to handle email login/register)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   const [globalCurrency, setGlobalCurrency] = useState(() => {
     const saved = localStorage.getItem('userCurrency');
     return saved ? JSON.parse(saved) : { name: 'Malaysian Ringgit', code: 'RM | MYR' };
@@ -77,7 +80,7 @@ function App() {
     if (API_KEY) fetchRates();
   }, []);
 
-  // 2. Auth & Firestore Sync
+  // 2. Auth & Firestore Sync (AMENDED with Auto-Redirect)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -90,13 +93,18 @@ function App() {
             if (userData.languagePreference) setGlobalLang(userData.languagePreference);
             if (userData.cashbackBalance !== undefined) setCashbackBalance(userData.cashbackBalance);
           }
+
+          // REDIRECT LOGIC: If user is logged in, move them out of Auth views
+          if (view === 'auth' || view === 'register' || view === 'landing') {
+            setView('home');
+          }
         } catch (e) { console.error("Firestore sync error:", e); }
       }
       setAuthLoaded(true);
       setLoading(false); 
     });
     return () => unsubscribe();
-  }, []);
+  }, [view]); // Added view dependency to re-check redirection
 
   // 3. Landing Timer
   useEffect(() => {
@@ -110,23 +118,33 @@ function App() {
     }
   }, [view, user, authLoaded, loading]);
 
-  const handleSetView = (newView: ViewState | string, id: string = '') => {
-    setView(newView as ViewState);
-    if (id) {
-        setSelectedTicketId(id);
-    } else {
-        // If switching views via nav without an ID, we keep the existing ID 
-        // unless it's a fresh start. This allows 'view-ticket' etc to keep working.
+  // NATIVE GOOGLE LOGIN (AMENDED)
+  const handleGoogleLogin = async () => {
+    try {
+      await FirebaseAuthentication.signInWithGoogle({
+        mode: 'popup', 
+      });
+      // Redirection is handled by the useEffect above
+    } catch (error) {
+      console.error("Native Google Login failed:", error);
+      alert("Login Error: Please check your internet or SHA-1 configuration.");
     }
   };
 
-  async function handleGoogle() {
-    try { await loginWithGoogle(); setView('home'); } catch (e) { console.error(e); }
-  }
+  // EMAIL REGISTRATION (AMENDED)
+  const handleRegister = async (e: any) => {
+    e.preventDefault();
+    try {
+      await registerUser(email, password);
+      // Redirection handled by useEffect
+    } catch (err: any) {
+      alert("Registration failed: " + err.message);
+    }
+  };
 
-  const handleAiRouting = (view: string, data: any) => {
-    setPendingSearch(data);
-    setView(view as ViewState);
+  const handleSetView = (newView: ViewState | string, id: string = '') => {
+    setView(newView as ViewState);
+    if (id) setSelectedTicketId(id);
   };
 
   const authenticatedViews: ViewState[] = [
@@ -147,10 +165,14 @@ function App() {
     };
 
     switch (view) {
-      // 🤖 AI Integration: Pass setPendingSearch to HomePage
-      case 'home': return <HomePage {...commonProps} setPendingSearch={setPendingSearch} />;
-      // Pass selectedTicketId as selectedId to HomePage
-      case 'home': return <HomePage {...commonProps} selectedId={selectedTicketId} />;
+      // COMBINED HOME CASE
+      case 'home': return (
+        <HomePage 
+          {...commonProps} 
+          setPendingSearch={setPendingSearch} 
+          selectedId={selectedTicketId} 
+        />
+      );
       
       case 'profile': return (
         <ProfilePage 
@@ -165,7 +187,6 @@ function App() {
         />
       );
       
-      // 🚀 AMENDED: Added pendingSearch and clearSearch to HotelsPage
       case 'hotels': return (
         <HotelsPage 
           {...commonProps} 
@@ -174,7 +195,6 @@ function App() {
         />
       );
       
-      // 🤖 AI Integration: Pass pendingSearch and clear function to FlightsPage
       case 'flights': return (
         <FlightsPage 
           {...commonProps} 
@@ -187,11 +207,9 @@ function App() {
       case 'tripplanner': return <TripPlannerPage {...commonProps} />;
       case 'manual-planner': return <ManualPlannerPage {...commonProps} />;
       case 'carrental': return <CarRentalPage {...commonProps} />;
-      
       case 'chatbot': return <ChatbotPage setView={handleSetView} />;
       case 'booking': return <BookingPage {...commonProps} />; 
       case 'notification': return <NotificationPage {...commonProps} />;
-      
       case 'view-ticket': return <ViewTicket ticketId={selectedTicketId} setView={handleSetView} />;
       case 'refund': return <RefundPage bookingId={selectedTicketId} setView={handleSetView} />;
       case 'about': return <AboutUs setView={handleSetView} />;
@@ -199,7 +217,6 @@ function App() {
       case 'edit-profile': return <EditProfile setView={handleSetView} />;
       case 'saved': return <SavedPage setView={handleSetView} globalCurrency={globalCurrency} />;
       case 'my-reviews': return <MyReviews setView={handleSetView} />;
-      
       default: return null;
     }
   };
@@ -211,9 +228,13 @@ function App() {
       {(view === 'auth' || view === 'register') && (
         <Suspense fallback={pageLoader}>
           <AuthPage 
-            view={view} setView={setView} onGoogle={handleGoogle} 
+            view={view}
+            onGoogle={handleGoogleLogin} 
+            setView={setView}
             onEmailClick={() => setView('register')}
-            onRegister={async () => {}} setEmail={() => {}} setPassword={() => {}}
+            onRegister={handleRegister} 
+            setEmail={setEmail} 
+            setPassword={setPassword}
           />
         </Suspense>
       )}

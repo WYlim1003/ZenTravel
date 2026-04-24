@@ -235,7 +235,7 @@ export async function searchTransport(locationRaw: string, excludeName?: string)
   return excludeName ? transport.filter(t => t.name !== excludeName) : transport;
 }
 
-export async function checkCompensation(disruptionType: string): Promise<CompensationResult> {
+export async function checkCompensation(_disruptionType: string): Promise<CompensationResult> {
   await new Promise((r) => setTimeout(r, 100));
   return { eligible: true, amountEUR: 250, amountMYR: 1300, regulation: 'Consumer Protection Code', conditions: ['Delay of 3+ hours'], claimDeadline: '6 years' };
 }
