@@ -7,7 +7,6 @@ import { HotelResultsPage } from './HotelResultsPage';
 import { searchHotels, toIATA } from '../services/mockTravelAPI'; 
 import "../styles/HotelsPage.css";
 
-// 🚀 Updated Interface to receive AI handoff data
 interface HotelProps {
   setView: (v: string) => void;
   pendingSearch?: { origin: string; destination: string } | null;
@@ -35,46 +34,17 @@ export const HotelsPage: React.FC<HotelProps> = ({ setView, pendingSearch, clear
     return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
 
-  // 🤖 AI INTELLIGENT AUTO-SEARCH LOGIC
+  // 🤖 AI INTELLIGENT FILL LOGIC (只填充，不自动搜索)
   useEffect(() => {
     if (pendingSearch) {
-      const runAutoSearch = async () => {
-        // AI usually extracts the target city as 'destination'
-        const targetCity = pendingSearch.destination || pendingSearch.origin;
-        setDestination(targetCity);
-        
-        setLoading(true);
-        try {
-          // 1. Retrieve data from Mock API automatically
-          const mockResults = await searchHotels(targetCity);
-
-          // 2. Transform Mock Data
-          const formattedResults = mockResults.map(h => ({
-            name: h.name,
-            location: h.distance,
-            price: `MYR ${h.priceMYR}`,
-            rating: h.stars.toFixed(1),
-            description: `Verified stay near ${toIATA(targetCity)} hub. ${h.amenity}`,
-            amenities: [h.amenity, "High-speed WiFi", "24/7 Concierge"],
-            image_keyword: h.recommended ? "luxury-hotel" : "modern-hotel",
-            isRecommended: h.recommended
-          }));
-
-          setHotels(formattedResults);
-          setViewMode('results'); // 3. Redirect to results immediately
-          
-          // 4. Clear the handoff data
-          if (clearSearch) clearSearch();
-        } catch (err) {
-          console.error("Hotel AI Search Error:", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      runAutoSearch();
+      const targetCity = pendingSearch.destination || pendingSearch.origin;
+      if (targetCity) {
+        setDestination(targetCity); // 填充地名
+        // 填充完后立刻清理 pendingSearch，这样下次进入页面就不会再重复填充旧数据
+        if (clearSearch) clearSearch(); 
+      }
     }
-  }, [pendingSearch]);
+  }, [pendingSearch, clearSearch]);
 
   const handleSearch = async () => {
     if (!destination) return alert("Please enter a destination!");

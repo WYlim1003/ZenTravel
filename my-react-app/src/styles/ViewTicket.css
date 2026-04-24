@@ -7,6 +7,9 @@
 .vt-title { font-size: 32px; margin-bottom: 10px; }
 .vt-route-summary { font-size: 22px; font-weight: bold; margin-bottom: 20px; display: flex; justify-content: center; gap: 15px; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
 .vt-info-header { text-align: left; margin-bottom: 20px; font-size: 17px; line-height: 1.6; font-family: sans-serif; }
+.vt-transport-route { background: rgba(127, 21, 189, 0.08); border: 1px solid rgba(127, 21, 189, 0.16); border-radius: 22px; padding: 18px; margin-bottom: 20px; text-align: left; display: grid; gap: 14px; }
+.vt-transport-route-item label { display: block; font-size: 14px; color: #6d6291; margin-bottom: 6px; font-weight: 600; }
+.vt-transport-route-item span { font-size: 17px; color: #1f1734; font-weight: 700; word-break: break-word; }
 .vt-card { background-color: rgba(127, 21, 189, 0.18); border: 2.2px solid #7F15BD; border-radius: 30px; padding: 25px; position: relative; }
 .vt-card-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; }
 .vt-loc { display: flex; flex-direction: column; text-align: left; }

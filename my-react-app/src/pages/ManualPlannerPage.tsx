@@ -28,6 +28,15 @@ interface Suggestion {
 
 // ─── PDF Export ───────────────────────────────────────────────────────────────
 
+/** Helvetica in jsPDF is WinAnsi-only; strip emoji and normalize common Unicode punctuation. */
+function pdfSafe(s: string): string {
+  return s
+    .replace(/[\u2190-\u2199\u21A6\u27A1\u2794]/g, '->')
+    .replace(/[\u2010-\u2015\u2212]/g, '-')
+    .replace(/\uFE0F/g, '')
+    .replace(/\p{Extended_Pictographic}/gu, '');
+}
+
 function exportManualPDF(itinerary: DayPlan[], tripName: string) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const W = 210;
@@ -46,10 +55,14 @@ function exportManualPDF(itinerary: DayPlan[], tripName: string) {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text(`✈  ${tripName}`, margin, 18);
+  doc.text(pdfSafe(tripName).replace(/\s+/g, ' ').trim() || 'My Trip', margin, 18);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`${itinerary.length} Day${itinerary.length > 1 ? 's' : ''} · Custom Itinerary · Created with ZenTravel`, margin, 30);
+  doc.text(
+    `${itinerary.length} Day${itinerary.length > 1 ? 's' : ''} | Custom Itinerary | Created with ZenTravel`,
+    margin,
+    30,
+  );
   y = 48;
 
   for (const day of itinerary) {
@@ -86,8 +99,8 @@ function exportManualPDF(itinerary: DayPlan[], tripName: string) {
       doc.setFont('helvetica', 'bold');
       doc.text(act.type.toUpperCase(), margin + 6, y + 4.5);
       doc.setFont('helvetica', 'normal');
-      doc.text(`${act.time}  —  ${act.description || '(no description)'}`, margin + 6, y + 9.5);
-      if (act.location) doc.text(`📍 ${act.location}`, margin + 6, y + 13.5);
+      doc.text(pdfSafe(`${act.time} - ${act.description || '(no description)'}`), margin + 6, y + 9.5);
+      if (act.location) doc.text(pdfSafe(`Location: ${act.location}`), margin + 6, y + 13.5);
       y += act.location ? 18 : 14;
       checkY(4);
     }

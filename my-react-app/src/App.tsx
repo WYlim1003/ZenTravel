@@ -165,7 +165,6 @@ function App() {
     };
 
     switch (view) {
-      // COMBINED HOME CASE
       case 'home': return (
         <HomePage 
           {...commonProps} 

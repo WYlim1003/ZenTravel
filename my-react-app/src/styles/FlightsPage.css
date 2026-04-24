@@ -440,9 +440,9 @@
 }
 
 .select-flight-btn {
-    background: #7b2cbf;
-    color: white;
-    border: none;
+    background: #f3ebff;
+    color: #7b2cbf;
+    border: 1px solid rgba(123, 44, 191, 0.18);
     padding: 12px 24px;
     border-radius: 16px;
     font-weight: 700;
@@ -452,6 +452,13 @@
     gap: 8px;
     box-shadow: 0 6px 15px rgba(123, 44, 191, 0.2);
     transition: all 0.2s ease;
+}
+
+.select-flight-btn.selected {
+    background: #5a189a;
+    color: white;
+    border-color: #5a189a;
+    box-shadow: 0 8px 18px rgba(90, 24, 154, 0.22);
 }
 
 .select-flight-btn:active {
@@ -472,4 +479,50 @@
     border-left: 4px solid #7b2cbf;
     padding-left: 12px;
     
+}
+
+.flight-selection-summary {
+    position: sticky;
+    bottom: 18px;
+    margin: 0 16px 24px;
+    padding: 18px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(123, 44, 191, 0.14);
+    box-shadow: 0 16px 40px rgba(90, 24, 154, 0.12);
+    backdrop-filter: blur(14px);
+}
+
+.selection-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.selection-copy strong {
+    color: #4b0082;
+    font-size: 1rem;
+}
+
+.selection-copy span {
+    color: #6d6291;
+    font-size: 0.88rem;
+    line-height: 1.4;
+}
+
+.confirm-flight-selection-btn {
+    width: 100%;
+    border: none;
+    border-radius: 18px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #7b2cbf 0%, #5a189a 100%);
+    color: white;
+    font-weight: 800;
+    box-shadow: 0 10px 24px rgba(123, 44, 191, 0.2);
+}
+
+.confirm-flight-selection-btn:disabled {
+    opacity: 0.55;
+    box-shadow: none;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Calendar, Users, PlaneTakeoff, PlaneLanding, ArrowUpDown, X, Plus, Minus, PlusCircle, Loader2, Check } from 'lucide-react';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 import { BottomNav } from '../components/BottomNav';
@@ -23,11 +23,15 @@ interface FlightProps {
   clearSearch?: () => void;
 }
 
+const getFlightSelectionKey = (flight: any) =>
+  flight ? `${flight.flightNumber}-${flight.timeDepart}-${flight.timeLanding}` : '';
+
 export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, clearSearch }) => {
   const [tripType, setTripType] = useState('Return');
   const [viewMode, setViewMode] = useState<'search' | 'results'>('search');
   const [loading, setLoading] = useState(false);
   const [sourcedFlights, setSourcedFlights] = useState<any[]>([]);
+  const [selectedFlights, setSelectedFlights] = useState<Record<number, any>>({});
 
   const [flights, setFlights] = useState([{ origin: "Kuala Lumpur", destination: "Bali", date: "2026-04-28" }]);
   const [returnDate, setReturnDate] = useState("2026-05-01");
@@ -94,6 +98,7 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
   const handleSearch = async () => {
     if (!flights[0].origin || !flights[0].destination) return alert("Please enter cities!");
     setLoading(true);
+    setSelectedFlights({});
     try {
       const allLegsResults = [];
       const leg1 = await searchFlights(flights[0].origin, flights[0].destination, flightClass);
@@ -130,32 +135,80 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
     setFlights(newFlights);
   };
 
-  const handleBooking = async (f: any) => {
+  const saveFlightBooking = async (f: any, legIndex: number) => {
     const user = auth.currentUser;
     if (!user) return alert("Please log in!");
+
+    const totalPax = passengers.adult + passengers.child + passengers.baby;
+    const passengerName =
+      user.displayName?.trim() ||
+      user.email?.split('@')[0]?.toUpperCase() ||
+      'Guest';
+    const isReturnInbound = tripType === 'Return' && legIndex === 1;
+    const travelDate = isReturnInbound ? returnDate : flights[0].date;
+    const route = isReturnInbound
+      ? { from: flights[0].destination, to: flights[0].origin }
+      : { from: flights[0].origin, to: flights[0].destination };
+
+    const bookingData = {
+      airline: f.airline,
+      bookingNum: `AR${Math.floor(1000 + Math.random() * 9000)}`,
+      cashbackClaimed: true,
+      date: travelDate,
+      flightNum: f.flightNumber,
+      from: toIATA(route.from),
+      to: toIATA(route.to),
+      hasNotification: true,
+      name: passengerName,
+      pax: String(totalPax),
+      price: f.priceMYR,
+      status: 'upcoming',
+      type: 'flight',
+      timeDepart: f.timeDepart,
+      timeLanding: f.timeLanding,
+      userId: user.uid
+    };
+
+    await addDoc(collection(db, "Booking"), bookingData);
+  };
+
+  const handleBooking = async (f: any, legIndex: number) => {
+    if (tripType === 'Return') {
+      setSelectedFlights((current) => {
+        if (getFlightSelectionKey(current[legIndex]) === getFlightSelectionKey(f)) {
+          const next = { ...current };
+          delete next[legIndex];
+          return next;
+        }
+
+        return { ...current, [legIndex]: f };
+      });
+      return;
+    }
+
     try {
-      const bookingData = {
-        airline: f.airline,
-        bookingNum: `AR${Math.floor(1000 + Math.random() * 9000)}`,
-        cashbackClaimed: true,
-        date: flights[0].date,
-        flightNum: f.flightNumber,
-        from: toIATA(flights[0].origin),
-        to: toIATA(flights[0].destination),
-        hasNotification: true,
-        name: "WANYEE",
-        pax: String(passengers.adult + passengers.child + passengers.baby),
-        price: f.priceMYR,
-        status: "upcoming",
-        type: "flight",
-        timeDepart: f.timeDepart,
-        timeLanding: f.timeLanding,
-        userId: user.uid 
-      };
-      await addDoc(collection(db, "Booking"), bookingData);
+      await saveFlightBooking(f, legIndex);
       alert("Flight Booked!");
       setView('booking');
-    } catch (err) { alert("Save failed"); }
+    } catch (err) {
+      alert("Save failed");
+    }
+  };
+
+  const handleConfirmReturnBooking = async () => {
+    if (!selectedFlights[0] || !selectedFlights[1]) {
+      alert('Please select both outbound and return flights.');
+      return;
+    }
+
+    try {
+      await saveFlightBooking(selectedFlights[0], 0);
+      await saveFlightBooking(selectedFlights[1], 1);
+      alert('Return flights booked!');
+      setView('booking');
+    } catch (err) {
+      alert('Save failed');
+    }
   };
 
   const addFlightRow = () => {
@@ -165,7 +218,25 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
   };
 
   if (viewMode === 'results') {
-    return <FlightResultsPage flights={sourcedFlights} meta={{ origin: flights[0].origin, destination: flights[0].destination, date: flights[0].date, pax: passengers.adult, class: flightClass }} onBack={() => setViewMode('search')} onBook={handleBooking} />;
+    return (
+      <FlightResultsPage
+        flights={sourcedFlights}
+        meta={{
+          origin: flights[0].origin,
+          destination: flights[0].destination,
+          date: flights[0].date,
+          returnDate,
+          pax: passengers.adult + passengers.child + passengers.baby,
+          class: flightClass,
+          tripType
+        }}
+        onBack={() => setViewMode('search')}
+        onBook={handleBooking}
+        selectedFlights={selectedFlights}
+        canConfirm={tripType !== 'Return' || Boolean(selectedFlights[0] && selectedFlights[1])}
+        onConfirmBooking={handleConfirmReturnBooking}
+      />
+    );
   }
 
   return (
