@@ -47,9 +47,8 @@ export const HomePage: React.FC<HomeProps> = ({ setView, globalCurrency, setPend
   const [searchTerm, setSearchTerm] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [rates, setRates] = useState<any>({ MYR: 1 });
   const [isAiProcessing, setIsAiProcessing] = useState(false);
-
+  const [rates, setRates] = useState<any>({ MYR: 1 });
   // 🤖 初始状态
   const [aiMessage, setAiMessage] = useState("Analyzing your travel profile...");
   const [targetSearchCity, setTargetSearchCity] = useState("");

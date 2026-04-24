@@ -119,15 +119,17 @@ function App() {
   }, [view, user, authLoaded, loading]);
 
   // NATIVE GOOGLE LOGIN (AMENDED)
+  // NATIVE GOOGLE LOGIN (Cleaned Version)
   const handleGoogleLogin = async () => {
     try {
       await FirebaseAuthentication.signInWithGoogle({
         mode: 'popup', 
       });
-      // Redirection is handled by the useEffect above
+      // Success: The onAuthStateChanged listener in App.tsx 
+      // will automatically detect the user and setView('home')
     } catch (error) {
-      console.error("Native Google Login failed:", error);
-      alert("Login Error: Please check your internet or SHA-1 configuration.");
+      // We'll just log it to the console for you to see in Inspect Element
+      console.error("Google Sign-In failed:", error);
     }
   };
 
@@ -172,6 +174,15 @@ function App() {
           selectedId={selectedTicketId} 
         />
       );
+
+      case 'insurance': 
+        return (
+          <InsurancePage 
+            {...commonProps} 
+            pendingSearch={pendingSearch} 
+            clearSearch={() => setPendingSearch(null)} 
+          />
+        );
       
       case 'profile': return (
         <ProfilePage 
