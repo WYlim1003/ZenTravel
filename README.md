@@ -3,12 +3,6 @@
 
 <!-- Replace REPLACE_FILE_ID below with your Google Drive file id, or paste your full “anyone with the link” URL and remove the template. -->
 
-### For judges: demo video (Google Drive)
-
-[![▶ DEMO VIDEO — JUDGES: CLICK HERE TO WATCH](https://img.shields.io/badge/▶%20DEMO%20VIDEO%20—%20JUDGES%3A%20CLICK%20HERE%20TO%20WATCH-4285F4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1xSmc61ZbqLkoJDPUFb4AaRiVtfWuZhyR/view?usp=sharing)
-
-* * *
-
 **Team Name:** Code & Coffee · **Domain:** Domain 1
 
 <img src="logo.jpg" alt="ZenTravel" width="420" />
@@ -24,6 +18,9 @@
 </div>
 
 * * * 
+### For judges: demo video (Google Drive)
+
+[![▶ DEMO VIDEO — JUDGES: CLICK HERE TO WATCH](https://img.shields.io/badge/▶%20DEMO%20VIDEO%20—%20JUDGES%3A%20CLICK%20HERE%20TO%20WATCH-4285F4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1xSmc61ZbqLkoJDPUFb4AaRiVtfWuZhyR/view?usp=sharing)
 
 ## Project documentation
 
