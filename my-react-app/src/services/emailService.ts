@@ -13,7 +13,8 @@
  *     {{flight_number}}, {{route}}, {{recovery_actions}}, {{timestamp}}
  *     Copy the Template ID  →  VITE_EMAILJS_TEMPLATE_ID
  *  4. Dashboard → Account → Public Key  →  VITE_EMAILJS_PUBLIC_KEY
- *  5. Add all three to zentravel/.env and restart the dev server.
+ *  5. Add all three to my-react-app/.env (same folder as this project) and restart Vite
+ *     — env vars are not hot-reloaded; you must stop and run `npm run dev` again.
  */
 
 import emailjs from '@emailjs/browser';
@@ -23,7 +24,16 @@ const SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID  as string | undefin
 const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string | undefined;
 const PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  as string | undefined;
 
-const isConfigured = !!(SERVICE_ID && TEMPLATE_ID && PUBLIC_KEY);
+const isConfigured = !!(
+  SERVICE_ID?.trim() &&
+  TEMPLATE_ID?.trim() &&
+  PUBLIC_KEY?.trim()
+);
+
+/** Exposed so the UI can show whether in-app send is available (Vite bakes this at build time). */
+export function isEmailJsConfigured(): boolean {
+  return isConfigured;
+}
 
 // ─── Email content builder ─────────────────────────────────────────────────
 

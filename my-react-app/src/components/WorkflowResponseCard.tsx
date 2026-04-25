@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { auth } from '../services/firebase';
-import { buildEmailPayload, sendRecoveryEmail } from '../services/emailService';
+import { buildEmailPayload, isEmailJsConfigured, sendRecoveryEmail } from '../services/emailService';
 import type { StructuredWorkflowOutput, WorkflowAction } from '../agents/types';
 
 const STAGES = [
@@ -167,8 +167,8 @@ export const WorkflowResponseCard: React.FC<Props> = ({ output }) => {
     const userName    = auth.currentUser?.displayName ?? '';
     const approvedList = executableActions.filter((a) => approved[a.id]);
     const payload = buildEmailPayload(output, approvedList, userEmail, userName);
-    const result  = await sendRecoveryEmail(payload);
-    setEmailMethod(result.method);
+    const result = await sendRecoveryEmail(payload);
+    setEmailMethod(result.method === 'emailjs' && result.ok ? 'emailjs' : 'mailto');
     setEmailedTo(userEmail || 'your registered email');
     setEmailSending(false);
   };
@@ -239,15 +239,29 @@ export const WorkflowResponseCard: React.FC<Props> = ({ output }) => {
               </div>
 
               {allDecided && (
-                <button
-                  className="wrc2-execute-btn"
-                  onClick={() => void handleExecute()}
-                  disabled={emailSending}
-                >
-                  {emailSending
-                    ? '⏳ Sending recovery email…'
-                    : `📧 Execute & Email Recovery Plan (${approvedCount} action${approvedCount !== 1 ? 's' : ''})`}
-                </button>
+                <div className="wrc2-email-execute">
+                  {isEmailJsConfigured() ? (
+                    <p className="wrc2-emailjs-hint wrc2-emailjs-hint--on">
+                      Email delivery: in-app (EmailJS). Sends to your signed-in address.
+                    </p>
+                  ) : (
+                    <p className="wrc2-emailjs-hint wrc2-emailjs-hint--off">
+                      EmailJS not set in <code>my-react-app/.env</code> — the button will open your
+                      email app (mailto) instead. Add <code>VITE_EMAILJS_SERVICE_ID</code>,{' '}
+                      <code>VITE_EMAILJS_TEMPLATE_ID</code>, and <code>VITE_EMAILJS_PUBLIC_KEY</code>
+                      , then restart Vite.
+                    </p>
+                  )}
+                  <button
+                    className="wrc2-execute-btn"
+                    onClick={() => void handleExecute()}
+                    disabled={emailSending}
+                  >
+                    {emailSending
+                      ? '⏳ Sending recovery email…'
+                      : `📧 Execute & Email Recovery Plan (${approvedCount} action${approvedCount !== 1 ? 's' : ''})`}
+                  </button>
+                </div>
               )}
             </>
           ) : (
