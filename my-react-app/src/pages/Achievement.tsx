@@ -12,9 +12,9 @@ import mascot3 from '../assets/MASCOT3.png';
 import mascot4 from '../assets/MASCOT4.png';
 import mascot5 from '../assets/MASCOT5.png';
 
-export const Achievement = ({ setLocalView }: { setLocalView: (v: any) => void }) => {
-  const [selectedZen, setSelectedZen] = useState<any>(null);
-  const [bookingData, setBookingData] = useState<any[]>([]);
+export const Achievement = ({ setLocalView }: { setLocalView: (v: string) => void }) => {
+  const [selectedZen, setSelectedZen] = useState<Record<string, unknown> | null>(null);
+  const [bookingData, setBookingData] = useState<Record<string, unknown>[]>([]);
   const [hasReview, setHasReview] = useState(false); 
 
   // --- 逻辑部分：从 Firebase 实时获取数据 ---
@@ -51,7 +51,7 @@ export const Achievement = ({ setLocalView }: { setLocalView: (v: any) => void }
     cities: new Set(hotelBookings.map(h => h.name)).size || (hotelBookings.length > 0 ? 1 : 0),
     nights: hotelBookings.reduce((acc, curr) => {
         // 从详情文本中提取数字，例如 "2 nights" -> 2
-        const n = parseInt(curr.details?.match(/\d+/)?.[0] || "1");
+        const n = parseInt((curr.details as string)?.match(/\d+/)?.[0] || "1");
         return acc + n;
     }, 0)
   };

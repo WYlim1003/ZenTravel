@@ -6,7 +6,13 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores([
+    'dist',
+    'node_modules',
+    // Nested Next.js / tooling — not part of the Vite app; avoids linting generated .next and duplicate app code
+    'zentravel/**',
+    '**/.next/**',
+  ]),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

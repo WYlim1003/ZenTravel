@@ -148,7 +148,7 @@ const DEFAULT_ROUTE: RouteData = {
 
 const calculateArrival = (departTime: string, durationMins: number) => {
   const [h, m] = departTime.split(':').map(Number);
-  let totalMins = h * 60 + m + durationMins;
+  const totalMins = h * 60 + m + durationMins;
   const arrivalH = Math.floor(totalMins / 60) % 24;
   const arrivalM = totalMins % 60;
   const nextDay = totalMins >= 1440 ? ' (+1)' : '';
@@ -401,7 +401,8 @@ export async function searchTransportOffers(params: {
 
 export async function checkCompensation(disruptionType: string): Promise<CompensationResult> {
   await new Promise((r) => setTimeout(r, 100));
-  return { eligible: true, amountEUR: 250, amountMYR: 1300, regulation: 'Consumer Protection Code', conditions: ['Delay of 3+ hours'], claimDeadline: '6 years' };
+  const type = disruptionType.toLowerCase();
+  return COMPENSATION[type] || COMPENSATION['delay'];
 }
 
 export async function executeTool(call: ToolCallPlan): Promise<ToolResult> {

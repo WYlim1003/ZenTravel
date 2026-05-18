@@ -2,16 +2,15 @@ import logo from '../assets/zentravel_logo.png'
 
 interface AuthProps {
   onGoogle: () => void;
-  onEmailClick: () => void;
-  onRegister: (e: any) => void;
-  onLogin: (e: any) => void;
+  onRegister: (e: React.FormEvent) => void;
+  onLogin: (e: React.FormEvent) => void;
   view: 'landing' | 'auth' | 'register' | 'login' | 'home' | 'profile';
-  setView: (v: any) => void;
+  setView: (v: string) => void;
   setEmail: (e: string) => void;
   setPassword: (p: string) => void;
 }
 
-export const AuthPage = ({ onGoogle, onEmailClick, onRegister, onLogin, view, setView, setEmail, setPassword }: AuthProps) => {
+export const AuthPage = ({ onGoogle, onRegister, onLogin, view, setView, setEmail, setPassword }: AuthProps) => {
   return (
     <div className="landing-container fade-in" style={{
     display: 'flex',

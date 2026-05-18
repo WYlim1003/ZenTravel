@@ -33,8 +33,8 @@ export const CarRentalPage = ({ setView }: { setView: (v: string) => void }) => 
   const [viewMode, setViewMode] = useState<'search' | 'results'>('search');
   const [loading, setLoading] = useState(false);
   const [transportOffers, setTransportOffers] = useState<TransportOffer[]>([]);
-  const [bookedFlights, setBookedFlights] = useState<any[]>([]);
-  const [bookedHotels, setBookedHotels] = useState<any[]>([]);
+  const [bookedFlights, setBookedFlights] = useState<Record<string, unknown>[]>([]);
+  const [bookedHotels, setBookedHotels] = useState<Record<string, unknown>[]>([]);
   
   // --- Form Data States ---
   const [location, setLocation] = useState("Kuala Lumpur");
@@ -56,7 +56,7 @@ export const CarRentalPage = ({ setView }: { setView: (v: string) => void }) => 
 
   const featureOptions = ['Child Seat', 'GPS', 'Bluetooth', 'Large Boot'];
   const { isLoaded: isMapLoaded } = useJsApiLoader({
-    id: 'car-rental-map',
+    id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY
   });
 
@@ -255,18 +255,20 @@ export const CarRentalPage = ({ setView }: { setView: (v: string) => void }) => 
 
     const preferredFlight = datedFlights[0];
     if (preferredFlight?.flightNum) {
-      setFlightNum(preferredFlight.flightNum);
-      if (preferredFlight.from) {
-        setLocation(preferredFlight.from);
-        setPinLocation(
-          AIRPORT_MAP_CENTERS[preferredFlight.from] ??
-          AIRPORT_MAP_CENTERS[toIATA(preferredFlight.from)] ??
-          null
-        );
-      }
-      if (preferredFlight.date) {
-        setDates({ start: preferredFlight.date, end: preferredFlight.date });
-      }
+      setTimeout(() => {
+        setFlightNum(preferredFlight.flightNum as string);
+        if (preferredFlight.from) {
+          setLocation(preferredFlight.from as string);
+          setPinLocation(
+            AIRPORT_MAP_CENTERS[preferredFlight.from as string] ??
+            AIRPORT_MAP_CENTERS[toIATA(preferredFlight.from as string)] ??
+            null
+          );
+        }
+        if (preferredFlight.date) {
+          setDates({ start: preferredFlight.date as string, end: preferredFlight.date as string });
+        }
+      }, 0);
     }
   }, [transferType, activeBookedFlights, flightNum]);
 
@@ -381,6 +383,7 @@ export const CarRentalPage = ({ setView }: { setView: (v: string) => void }) => 
       }
 
       await setDoc(bookingRef, {
+        // eslint-disable-next-line react-hooks/purity
         bookingNum: `TP${Math.floor(1000 + Math.random() * 9000)}`,
         carType: offer.model ? `${offer.model} (${offer.carType})` : offer.carType,
         company: offer.company,

@@ -4,7 +4,7 @@ import mascotImg from '../assets/MASCOT-removebg-preview.png';
 
 interface NavProps {
   currentView: string;
-  setView: (view: any) => void;
+  setView: (view: string) => void;
 }
 
 export const BottomNav = ({ currentView, setView }: NavProps) => {

@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { ChevronLeft, Check, Search } from 'lucide-react';
 import '../styles/Currency.css';
 
-export const Currency = ({ setLocalView, currentCurrency, setCurrentCurrency }: any) => {
+interface CurrencyProps {
+  setLocalView: (v: string) => void;
+  currentCurrency: string;
+  setCurrentCurrency: (curr: { name: string; code: string }) => void;
+}
+
+export const Currency = ({ setLocalView, currentCurrency, setCurrentCurrency }: CurrencyProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const allCurrencies = [
@@ -18,7 +24,7 @@ export const Currency = ({ setLocalView, currentCurrency, setCurrentCurrency }: 
     c.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSelect = (curr: any) => {
+  const handleSelect = (curr: { name: string; code: string }) => {
     setCurrentCurrency(curr);
     
     localStorage.setItem('userCurrency', JSON.stringify(curr));

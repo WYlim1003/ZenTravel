@@ -14,6 +14,16 @@ import mascotImg from '../assets/MASCOT.png';
 import { translations } from '../utils/translations'; 
 import '../styles/ProfilePage.css';
 
+interface ProfilePageProps {
+  setView: (v: string, id?: string) => void;
+  globalCurrency: { name: string; code: string }; 
+  setGlobalCurrency: (c: { name: string; code: string }) => void;
+  cashbackBalance: number;
+  setGlobalLang: (l: string) => void;
+  setCashbackBalance: (v: number | ((prev: number) => number)) => void;
+  globalLang: string;
+}
+
 export const ProfilePage = ({ 
   setView, 
   globalCurrency, 
@@ -22,10 +32,10 @@ export const ProfilePage = ({
   setGlobalLang,
   setCashbackBalance,
   globalLang 
-}: any) => {
+}: ProfilePageProps) => {
   const [localView, setLocalView] = useState<'main' | 'coupons' | 'achievements' | 'currency' | 'cashback'>('main');
   const [bookingStats, setBookingStats] = useState({ count: 0, cities: 0, zensUnlocked: 2 });
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Record<string, unknown>[]>([]);
   const [showLangModal, setShowLangModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [promoInput, setPromoInput] = useState('');
@@ -45,13 +55,13 @@ export const ProfilePage = ({
       const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       setBookings(docs);
       
-      const hotelDocs = docs.filter((d: any) => d.type === 'hotel');
-      const uniqueCities = new Set(hotelDocs.map((d: any) => (d.name || d.hotelName))).size || (docs.length > 0 ? 1 : 0);
+      const hotelDocs = docs.filter((d: Record<string, unknown>) => d.type === 'hotel');
+      const uniqueCities = new Set(hotelDocs.map((d: Record<string, unknown>) => (d.name || d.hotelName))).size || (docs.length > 0 ? 1 : 0);
       
       let unlocked = 2; 
       if (docs.length > 0) unlocked += 1; 
       if (hotelDocs.length >= 2) unlocked += 1; 
-      if (docs.some((d: any) => d.type === 'transport' || d.type === 'flight')) unlocked += 1; 
+      if (docs.some((d: Record<string, unknown>) => d.type === 'transport' || d.type === 'flight')) unlocked += 1; 
 
       setBookingStats({ count: docs.length, cities: uniqueCities, zensUnlocked: unlocked });
     });
@@ -98,9 +108,9 @@ export const ProfilePage = ({
     <Cashback 
       setLocalView={setLocalView} 
       balance={cashbackBalance} 
-      setBalance={(newVal: any) => {
+      setBalance={(newVal: number | ((prev: number) => number)) => {
         const oldVal = cashbackBalance;
-        const finalVal = typeof newVal === 'function' ? newVal(oldVal) : newVal;
+        const finalVal = typeof newVal === 'function' ? (newVal as (prev: number) => number)(oldVal) : newVal;
         setCashbackBalance(finalVal);
         if (finalVal === 0 && oldVal > 0) {
           const amountStr = oldVal.toFixed(2);

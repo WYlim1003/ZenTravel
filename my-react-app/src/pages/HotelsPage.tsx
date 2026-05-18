@@ -16,7 +16,7 @@ interface HotelProps {
 export const HotelsPage: React.FC<HotelProps> = ({ setView, pendingSearch, clearSearch }) => {
   const [viewMode, setViewMode] = useState<'search' | 'results'>('search');
   const [loading, setLoading] = useState(false);
-  const [hotels, setHotels] = useState<any[]>([]);
+  const [hotels, setHotels] = useState<Record<string, unknown>[]>([]);
 
   // --- Search Form States ---
   const [destination, setDestination] = useState("");
@@ -39,8 +39,7 @@ export const HotelsPage: React.FC<HotelProps> = ({ setView, pendingSearch, clear
     if (pendingSearch) {
       const targetCity = pendingSearch.destination || pendingSearch.origin;
       if (targetCity) {
-        setDestination(targetCity); // 填充地名
-        // 填充完后立刻清理 pendingSearch，这样下次进入页面就不会再重复填充旧数据
+        setTimeout(() => setDestination(targetCity), 0);
         if (clearSearch) clearSearch(); 
       }
     }
@@ -65,14 +64,14 @@ export const HotelsPage: React.FC<HotelProps> = ({ setView, pendingSearch, clear
 
       setHotels(formattedResults);
       setViewMode('results');
-    } catch (err) {
+    } catch {
       alert("Error retrieving mock hotel data.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBooking = async (hotel: any) => {
+  const handleBooking = async (hotel: Record<string, unknown>) => {
     const user = auth.currentUser;
     if (!user) return alert("Please log in to book!");
 
@@ -95,7 +94,7 @@ export const HotelsPage: React.FC<HotelProps> = ({ setView, pendingSearch, clear
       await addDoc(collection(db, "Booking"), bookingData);
       alert(`Success! Booked ${hotel.name}.`);
       setView('booking');
-    } catch (err) {
+    } catch {
       alert("Firebase save failed.");
     }
   };

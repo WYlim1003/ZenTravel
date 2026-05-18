@@ -9,11 +9,11 @@ import mascotImg from '../assets/MASCOT.png';
 import '../styles/MyReviews.css';
 
 export const MyReviews = ({ setView }: { setView: (v: string) => void }) => {
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [pendingBookings, setPendingBookings] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Record<string, unknown>[]>([]);
+  const [pendingBookings, setPendingBookings] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Record<string, unknown> | null>(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
 
@@ -37,7 +37,7 @@ export const MyReviews = ({ setView }: { setView: (v: string) => void }) => {
     const unsubPending = onSnapshot(qPending, (snapshot) => {
       const bookings = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter((b: any) => b.hasReviewed !== true);
+        .filter((b: { hasReviewed?: boolean }) => b.hasReviewed !== true);
       setPendingBookings(bookings);
     });
 

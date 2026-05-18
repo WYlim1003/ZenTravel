@@ -6,22 +6,22 @@ import mascotImg from '../assets/MASCOT.png';
 import { translations } from '../utils/translations'; 
 import '../styles/BookingPage.css';
 
-export const BookingPage = ({ setView, globalLang }: { setView: (view: any, id?: string) => void; globalLang: string }) => {
+export const BookingPage = ({ setView, globalLang }: { setView: (view: string, id?: string) => void; globalLang: string }) => {
   const [activeTab, setActiveTab] = useState('upcoming');
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Record<string, unknown>[]>([]);
   const t = translations[globalLang || 'en']; 
 
-  const getTransportTitle = (item: any) => {
+  const getTransportTitle = (item: Record<string, unknown>) => {
     if (item.transportMode === 'pickup') return 'Airport Pick-up';
     if (item.transportMode === 'dropoff') return 'Airport Drop-off';
     if (item.transportMode === 'rental') return 'Car Rental';
-    return item.name || item.hotelName || 'Transport';
+    return (item.name as string) || (item.hotelName as string) || 'Transport';
   };
 
   // Firebase Timestamp 安全转换逻辑
-  const safeDate = (val: any) => {
+  const safeDate = (val: string | number | { seconds: number }) => {
     if (!val) return "";
-    if (typeof val === 'object' && val.seconds) {
+    if (typeof val === 'object' && 'seconds' in val) {
       return new Date(val.seconds * 1000).toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',
@@ -31,7 +31,7 @@ export const BookingPage = ({ setView, globalLang }: { setView: (view: any, id?:
     return String(val);
   };
 
-  const safeSlashDate = (val: any) => {
+  const safeSlashDate = (val: string | number | { seconds: number }) => {
     if (!val) return "";
 
     if (typeof val === 'object' && val.seconds) {

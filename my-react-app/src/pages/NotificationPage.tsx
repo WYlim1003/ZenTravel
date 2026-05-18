@@ -8,23 +8,34 @@ import '../App.css';
 import '../styles/NotificationPage.css';
 
 interface NotificationPageProps {
-  setView: (v: any, id?: string) => void;
+  setView: (v: string, id?: string) => void;
   globalCurrency: { name: string; code: string };
 }
 
+interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  date: string;
+  type: 'cancelled' | 'success';
+  hotelName?: string;
+  location?: string;
+  bookingType?: string;
+}
+
 export const NotificationPage: React.FC<NotificationPageProps> = ({ setView, globalCurrency }) => {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [analysisTarget, setAnalysisTarget] = useState<any | null>(null);
+  const [analysisTarget, setAnalysisTarget] = useState<AppNotification | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
+  const [aiSuggestions, setAiSuggestions] = useState<Record<string, unknown>[]>([]);
 
   const symbol = globalCurrency.code.split(' | ')[0];
 
-  const formatDate = (dateValue: any) => {
+  const formatDate = (dateValue: string | number | Date) => {
     if (!dateValue) return 'Recently';
     const date = new Date(dateValue);
-    if (isNaN(date.getTime())) return dateValue; 
+    if (isNaN(date.getTime())) return String(dateValue); 
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
@@ -64,11 +75,11 @@ export const NotificationPage: React.FC<NotificationPageProps> = ({ setView, glo
     return () => unsubscribe();
   }, []);
 
-  const startAIAnalysis = async (notif: any) => {
+  const startAIAnalysis = async (notif: AppNotification) => {
     setAnalysisTarget(notif);
     setIsAnalyzing(true);
     
-    let results: any[] = [];
+    let results: Record<string, unknown>[] = [];
     const location = notif.location || "Bali";
     const cancelledName = notif.hotelName; // 这是要排除的名字
 

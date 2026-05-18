@@ -2,10 +2,20 @@ import React from 'react';
 import { ArrowLeft, Plane, ShieldCheck, ChevronRight, Clock } from 'lucide-react';
 import '../styles/FlightsPage.css';
 
-const getFlightSelectionKey = (flight: any) =>
+const getFlightSelectionKey = (flight: Record<string, unknown> | undefined) =>
   flight ? `${flight.flightNumber}-${flight.timeDepart}-${flight.timeLanding}` : '';
 
-export const FlightResultsPage: React.FC<any> = ({
+interface FlightResultsPageProps {
+  flights: { title: string; data: Record<string, unknown>[] }[];
+  meta: { origin: string; destination: string; date: string; returnDate?: string; tripType: string; pax: number; class: string };
+  onBack: () => void;
+  onBook: (flight: Record<string, unknown>, legIdx: number) => void;
+  selectedFlights?: Record<number, Record<string, unknown>>;
+  canConfirm?: boolean;
+  onConfirmBooking: () => void;
+}
+
+export const FlightResultsPage: React.FC<FlightResultsPageProps> = ({
   flights,
   meta,
   onBack,
@@ -37,11 +47,11 @@ export const FlightResultsPage: React.FC<any> = ({
       </header>
 
       <main className="results-list-premium">
-        {flights.map((leg: any, legIdx: number) => (
+        {flights.map((leg, legIdx: number) => (
           <div key={legIdx} className="leg-section">
             <h3 className="leg-title">{leg.title}</h3>
 
-            {leg.data.map((f: any, i: number) => (
+            {leg.data.map((f, i: number) => (
               <div key={i} className="premium-flight-card fade-in">
                 <div className="flight-card-header">
                   <div className="airline-brand">

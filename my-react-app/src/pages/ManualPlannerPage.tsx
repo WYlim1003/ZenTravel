@@ -128,7 +128,7 @@ export const ManualPlannerPage: React.FC<{ setView: (v: string) => void }> = ({ 
   const addBlock = (dayIdx: number, type: Activity['type']) => {
     const newItin = [...itinerary];
     newItin[dayIdx].activities.push({
-      id:          Date.now().toString(),
+      id:          crypto.randomUUID(),
       type,
       time:        '12:00',
       location:    '',
@@ -181,7 +181,7 @@ export const ManualPlannerPage: React.FC<{ setView: (v: string) => void }> = ({ 
   const applySuggestion = (dayIdx: number, sug: Suggestion) => {
     const newItin = [...itinerary];
     newItin[dayIdx].activities.push({
-      id:          Date.now().toString(),
+      id:          crypto.randomUUID(),
       type:        'Activity',
       time:        '10:00',
       location:    sug.location,

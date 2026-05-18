@@ -20,8 +20,8 @@ export default defineConfig({
           Connection: 'keep-alive',
         },
 
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
             console.log('--- Vite Proxy Error ---', err);
           });
         },

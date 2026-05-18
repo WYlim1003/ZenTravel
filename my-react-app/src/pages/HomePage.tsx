@@ -24,7 +24,6 @@ import tripPlannerImg from '../assets/TripPlanner_pic.png';
 
 interface HomeProps {
   setView: (v: string) => void;
-  globalCurrency: { name: string; code: string };
   setPendingSearch: (data: { origin: string, destination: string } | null) => void;
 }
 
@@ -42,25 +41,17 @@ const extractLocationIntelligence = (term: string) => {
   return null;
 };
 
-export const HomePage: React.FC<HomeProps> = ({ setView, globalCurrency, setPendingSearch }) => {
+export const HomePage: React.FC<HomeProps> = ({ setView, setPendingSearch }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [rates, setRates] = useState<any>({ MYR: 1 });
   const [isAiProcessing, setIsAiProcessing] = useState(false);
 
   // 🤖 初始状态
   const [aiMessage, setAiMessage] = useState("Analyzing your travel profile...");
   const [targetSearchCity, setTargetSearchCity] = useState("");
 
-  useEffect(() => {
-    fetch(`https://open.er-api.com/v6/latest/MYR`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.rates) setRates(data.rates);
-      })
-      .catch(err => console.error("Exchange API error:", err));
-  }, []);
+
 
   // 🤖 Z-AI 智能地段分析
   const getAiRegionRecommendation = (dest: string) => {

@@ -23,15 +23,15 @@ interface FlightProps {
   clearSearch?: () => void;
 }
 
-const getFlightSelectionKey = (flight: any) =>
+const getFlightSelectionKey = (flight: Record<string, unknown> | undefined) =>
   flight ? `${flight.flightNumber}-${flight.timeDepart}-${flight.timeLanding}` : '';
 
 export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, clearSearch }) => {
   const [tripType, setTripType] = useState('Return');
   const [viewMode, setViewMode] = useState<'search' | 'results'>('search');
   const [loading, setLoading] = useState(false);
-  const [sourcedFlights, setSourcedFlights] = useState<any[]>([]);
-  const [selectedFlights, setSelectedFlights] = useState<Record<number, any>>({});
+  const [sourcedFlights, setSourcedFlights] = useState<{ title: string; data: Record<string, unknown>[] }[]>([]);
+  const [selectedFlights, setSelectedFlights] = useState<Record<number, Record<string, unknown>>>({});
 
   const [flights, setFlights] = useState([{ origin: "Kuala Lumpur", destination: "Bali", date: "2026-04-28" }]);
   const [returnDate, setReturnDate] = useState("2026-05-01");
@@ -45,7 +45,7 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY 
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY
   });
 
   // 🤖 AI INTELLIGENT AUTO-SEARCH LOGIC
@@ -93,7 +93,7 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
 
       runAutoSearch();
     }
-  }, [pendingSearch]); // Only runs when AI provides new data
+  }, [pendingSearch, clearSearch, flightClass, tripType]); // Only runs when AI provides new data
 
   const handleSearch = async () => {
     if (!flights[0].origin || !flights[0].destination) return alert("Please enter cities!");
@@ -120,7 +120,7 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
 
       setSourcedFlights(allLegsResults);
       setViewMode('results');
-    } catch (err) {
+    } catch {
       alert("Error fetching flights.");
     } finally {
       setLoading(false);
@@ -135,7 +135,7 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
     setFlights(newFlights);
   };
 
-  const saveFlightBooking = async (f: any, legIndex: number) => {
+  const saveFlightBooking = async (f: Record<string, unknown>, legIndex: number) => {
     const user = auth.currentUser;
     if (!user) return alert("Please log in!");
 
@@ -172,7 +172,7 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
     await addDoc(collection(db, "Booking"), bookingData);
   };
 
-  const handleBooking = async (f: any, legIndex: number) => {
+  const handleBooking = async (f: Record<string, unknown>, legIndex: number) => {
     if (tripType === 'Return') {
       setSelectedFlights((current) => {
         if (getFlightSelectionKey(current[legIndex]) === getFlightSelectionKey(f)) {
@@ -190,7 +190,7 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
       await saveFlightBooking(f, legIndex);
       alert("Flight Booked!");
       setView('booking');
-    } catch (err) {
+    } catch {
       alert("Save failed");
     }
   };
@@ -206,7 +206,7 @@ export const FlightsPage: React.FC<FlightProps> = ({ setView, pendingSearch, cle
       await saveFlightBooking(selectedFlights[1], 1);
       alert('Return flights booked!');
       setView('booking');
-    } catch (err) {
+    } catch {
       alert('Save failed');
     }
   };

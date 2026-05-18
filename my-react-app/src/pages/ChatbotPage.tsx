@@ -144,7 +144,7 @@ export const ChatbotPage: React.FC<ChatbotPageProps> = ({ setView }) => {
   // When the workflow pauses to ask a question, we store the original input here
   // so that follow-up replies are combined with it instead of being sent alone.
   const conversationContextRef = useRef<string>('');
-  let msgId = useRef(0);
+  const msgId = useRef(0);
 
   const clearPanelTimers = () => {
     panelTimers.current.forEach(clearTimeout);

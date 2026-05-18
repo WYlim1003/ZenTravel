@@ -4,13 +4,39 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { MessageSquare, ChevronLeft } from 'lucide-react';
 import '../styles/ViewTicket.css';
 
+interface TicketData {
+  id: string;
+  type: string;
+  name?: string;
+  from?: string;
+  to?: string;
+  plateNum?: string;
+  bookNum?: string;
+  bookingNum?: string;
+  passenger?: string;
+  userName?: string;
+  driverName?: string;
+  driverPhone?: string;
+  pickupPoint?: string;
+  destination?: string;
+  distance?: string;
+  date?: string;
+  price?: number | string;
+  timeDepart?: string | { toDate: () => Date };
+  timeLanding?: string | { toDate: () => Date };
+  carType?: string;
+  flightNum?: string;
+  flightNo?: string;
+  status?: string;
+}
+
 interface ViewTicketProps {
   ticketId: string;
-  setView: (view: any) => void;
+  setView: (view: string) => void;
 }
 
 export const ViewTicket = ({ ticketId, setView }: ViewTicketProps) => {
-  const [ticket, setTicket] = useState<any>(null);
+  const [ticket, setTicket] = useState<TicketData | null>(null);
 
   useEffect(() => {
     if (!ticketId) return;
@@ -30,10 +56,10 @@ export const ViewTicket = ({ ticketId, setView }: ViewTicketProps) => {
     return () => unsubscribe();
   }, [ticketId]);
 
-  const formatTime = (ts: any) => {
+  const formatTime = (ts: string | { toDate: () => Date }) => {
     if (!ts) return '--:--';
 
-    if (ts.toDate) {
+    if (typeof ts === 'object' && 'toDate' in ts) {
       const date = ts.toDate();
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     }

@@ -346,11 +346,11 @@ export async function flightAgent(incident: ExtractedIncident): Promise<Workflow
   return { id: 'f-skip', agent: 'flight', description: 'Skip', status: 'skipped' };
 }
 
-export async function compensationAgent(_incident: ExtractedIncident): Promise<WorkflowAction> {
+export async function compensationAgent(): Promise<WorkflowAction> {
   return { id: 'comp', agent: 'compensation', description: 'Check', status: 'skipped' };
 }
 
-export async function communicationAgent(_context: unknown, _actions: WorkflowAction[]): Promise<WorkflowAction> {
+export async function communicationAgent(): Promise<WorkflowAction> {
   return { id: 'comm', agent: 'communication', description: 'Notify', status: 'completed', output: 'Recovery ready.' };
 }
 

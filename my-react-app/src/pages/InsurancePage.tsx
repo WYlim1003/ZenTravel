@@ -13,8 +13,8 @@ interface InsuranceProps {
 
 export const InsurancePage: React.FC<InsuranceProps> = ({ setView, pendingSearch, clearSearch }) => {
   const [plans, setPlans] = useState<InsurancePlan[]>([]);
-  const [uninsuredTrips, setUninsuredTrips] = useState<any[]>([]);
-  const [protectedTrips, setProtectedTrips] = useState<any[]>([]); // 🚀 New Section State
+  const [uninsuredTrips, setUninsuredTrips] = useState<Record<string, unknown>[]>([]);
+  const [protectedTrips, setProtectedTrips] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<InsurancePlan | null>(null);
   const [selectedTripId, setSelectedTripId] = useState<string>("");
@@ -30,14 +30,14 @@ export const InsurancePage: React.FC<InsuranceProps> = ({ setView, pendingSearch
     const user = auth.currentUser;
     if (!user) return;
     
-    setLoading(true);
+    // setLoading(true); // Redundant if loading starts as true
     try {
       const planData = await getInsurancePlans();
       setPlans(planData);
 
       const q = query(collection(db, "Booking"), where("userId", "==", user.uid));
       const snap = await getDocs(q);
-      const allBookings = snap.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+      const allBookings = snap.docs.map(doc => ({ id: doc.id, ...doc.data() as { type?: string; linkedTripId?: string; status?: string; to?: string; name?: string; date?: string } }));
       
       // 1. Identify linked IDs and active trips
       const insuredIds = allBookings.filter(b => b.type === 'insurance').map(i => i.linkedTripId);
@@ -56,9 +56,10 @@ export const InsurancePage: React.FC<InsuranceProps> = ({ setView, pendingSearch
   };
 
   useEffect(() => {
-    fetchData();
+    const timer = setTimeout(() => fetchData(), 0);
     if (pendingSearch && clearSearch) clearSearch();
-  }, []);
+    return () => clearTimeout(timer);
+  }, [pendingSearch, clearSearch]);
 
   const getFilteredTrips = () => {
     if (!selectedPlan) return [];
@@ -86,7 +87,7 @@ export const InsurancePage: React.FC<InsuranceProps> = ({ setView, pendingSearch
       });
       await fetchData(); // Refresh list
       setSelectedPlan(null);
-    } catch (error) { alert("Error saving."); }
+    } catch { alert("Error saving."); }
     finally { setIsBuying(false); }
   };
 

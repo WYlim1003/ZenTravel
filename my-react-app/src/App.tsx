@@ -50,7 +50,7 @@ const API_KEY = import.meta.env.VITE_EXCHANGE_RATE_API_KEY;
 function App() {
   const [view, setView] = useState<ViewState>('landing');
   const [selectedTicketId, setSelectedTicketId] = useState<string>(''); 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<import('firebase/auth').User | null>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showFloatingChat, setShowFloatingChat] = useState(false);
@@ -105,7 +105,11 @@ function App() {
     if (view === 'landing' && !loading) {
       const timer = setTimeout(() => {
         if (authLoaded) {
-          user ? setView('home') : setView('auth'); 
+          if (user) {
+            setView('home');
+          } else {
+            setView('auth');
+          }
         }
       }, 3000);
       return () => clearTimeout(timer);
@@ -131,8 +135,8 @@ function App() {
     try {
       await registerUser(email, password);
       setView('home');
-    } catch (e: any) {
-      alert(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) alert(e.message);
     }
   }
 
@@ -141,15 +145,12 @@ function App() {
     try {
       await loginUser(email, password);
       setView('home');
-    } catch (e: any) {
-      alert(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) alert(e.message);
     }
   }
 
-  const handleAiRouting = (view: string, data: any) => {
-    setPendingSearch(data);
-    setView(view as ViewState);
-  };
+
 
   const authenticatedViews: ViewState[] = [
     'home', 'profile', 'chatbot', 'booking', 'notification', 
@@ -182,7 +183,7 @@ function App() {
       case 'profile': return (
         <ProfilePage 
           {...commonProps}
-          setGlobalCurrency={(newCurr: any) => {
+          setGlobalCurrency={(newCurr: { name: string; code: string }) => {
               setGlobalCurrency(newCurr);
               localStorage.setItem('userCurrency', JSON.stringify(newCurr));
           }} 
@@ -238,10 +239,9 @@ function App() {
       {(view === 'auth' || view === 'register' || view === 'login') && (
         <Suspense fallback={pageLoader}>
           <AuthPage 
-            view={view as any} 
+            view={view as 'landing' | 'auth' | 'register' | 'login' | 'home' | 'profile'} 
             setView={setView} 
             onGoogle={handleGoogle} 
-            onEmailClick={() => setView('login')}
             onRegister={handleRegister}
             onLogin={handleLogin}
             setEmail={setEmail} 

@@ -54,7 +54,7 @@ function extractFlightNumber(text: string): string | undefined {
 // Optional IATA code suffix: " (KUL)", "(FRA)", etc.
 const IATA_OPT = /(?:\s*\([A-Z]{2,3}\))?/;
 // A city/airport name: 2+ alpha words, up to 4 words
-const CITY     = /([A-Za-z]{2,}(?:\s+[A-Za-z]{2,}){0,3})/;
+const CITY = /([A-Za-z]{2,}(?:\s+[A-Za-z]{2,}){0,3})/;
 
 function extractRoute(text: string): { origin?: string; destination?: string } {
   // "from Kuala Lumpur (KUL) to Frankfurt (FRA)" — handles optional IATA codes
@@ -64,8 +64,8 @@ function extractRoute(text: string): { origin?: string; destination?: string } {
   ).exec(text);
   if (full) {
     const origin = full[1].trim();
-    const dest   = full[2].trim();
-    const junk   = /^(allow|a |for |the |due |lato|late)/i;
+    const dest = full[2].trim();
+    const junk = /^(allow|a |for |the |due |lato|late)/i;
     if (!junk.test(dest)) return { origin, destination: dest };
   }
 
@@ -109,7 +109,7 @@ function extractBareCityName(text: string): string | undefined {
 
 function buildFallbackExtraction(input: IncidentInput): ExtractedIncident {
   const disruptionType = inferDisruptionType(input.rawInput);
-  const flightNumber   = extractFlightNumber(input.rawInput);
+  const flightNumber = extractFlightNumber(input.rawInput);
   const { origin, destination: routeDest } = extractRoute(input.rawInput);
 
   // Last-resort: if route extraction failed, try treating the last "User clarification:"
@@ -118,7 +118,7 @@ function buildFallbackExtraction(input: IncidentInput): ExtractedIncident {
 
   const missing: string[] = [];
   if (!flightNumber) missing.push('flight number');
-  if (!destination)  missing.push('destination');
+  if (!destination) missing.push('destination');
 
   return {
     summary: input.rawInput.slice(0, 200),
@@ -337,16 +337,16 @@ async function generateRecoveryStrategy(
 
 function getClarifyingQuestions(incident: ExtractedIncident): string[] {
   const q: string[] = [];
-  if (incident.missingFields.includes('destination') && !incident.destination) 
+  if (incident.missingFields.includes('destination') && !incident.destination)
     q.push('Where were you flying to?');
-  if (incident.disruptionType === 'unknown') 
+  if (incident.disruptionType === 'unknown')
     q.push('Was your flight delayed, cancelled, or was this a baggage issue?');
   return q;
 }
 
 // ─── Standard Sourcing Workflows (Hotels/Flights) ───────────────────────────
 
-export async function runHotelSearchWorkflow(destination: string, _startDate: string, _endDate: string, _guests: number): Promise<StructuredWorkflowOutput> {
+export async function runHotelSearchWorkflow(destination: string): Promise<StructuredWorkflowOutput> {
   const startedAt = performance.now();
   const summary = `SEARCH: Hotels in ${destination}`;
   const incident: ExtractedIncident = { summary, disruptionType: 'unknown', destination, confidence: 1.0, missingFields: [], ambiguityNotes: [] };
@@ -363,7 +363,7 @@ export async function runHotelSearchWorkflow(destination: string, _startDate: st
   };
 }
 
-export async function runFlightSearchWorkflow(origin: string, destination: string, _date: string, _pax: number, _fClass: string): Promise<StructuredWorkflowOutput> {
+export async function runFlightSearchWorkflow(origin: string, destination: string): Promise<StructuredWorkflowOutput> {
   const startedAt = performance.now();
   const summary = `SEARCH: Flights from ${origin} to ${destination}`;
   const incident: ExtractedIncident = { summary, disruptionType: 'unknown', origin, destination, confidence: 1.0, missingFields: [], ambiguityNotes: [] };
@@ -454,8 +454,8 @@ export async function runZenTravelWorkflow(rawInput: string): Promise<Structured
     clarifyingQuestions: [],
     plan,
     failures,
-    finalMessage: allFailed 
-      ? 'Automatic recovery failed. Please use specialist agents.' 
+    finalMessage: allFailed
+      ? 'Automatic recovery failed. Please use specialist agents.'
       : 'Recovery plan complete. Review your options below.',
     metadata: { usedGLM: finalUsedGLM, fallbackUsed: !finalUsedGLM, executionMs: Math.round(performance.now() - startedAt) },
   };

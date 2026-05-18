@@ -8,7 +8,7 @@ import {
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 
-export const registerUser = async (email: string, password: string) => {  try {
+export const registerUser = async (email: string, password: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -27,13 +27,9 @@ export const registerUser = async (email: string, password: string) => {  try {
     });
 
     return user;
-  } catch (error) {
-    throw error;
-  }
 };
 
 export const loginUser = async (email: string, password: string) => {
-  try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -42,14 +38,10 @@ export const loginUser = async (email: string, password: string) => {
     }, { merge: true });
 
     return user;
-  } catch (error) {
-    throw error;
-  }
 };
 
 
 export const loginWithGoogle = async () => {
-  try {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
@@ -63,7 +55,4 @@ export const loginWithGoogle = async () => {
     }, { merge: true });
 
     return user;
-  } catch (error) {
-    throw error;
-  }
 };

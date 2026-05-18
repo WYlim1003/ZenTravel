@@ -17,14 +17,14 @@ interface SavedItem {
 
 // Ensure the props match what App.tsx sends
 interface SavedPageProps {
-  setView: (v: any, id?: string) => void;
+  setView: (v: string, id?: string) => void;
   globalCurrency?: { name: string; code: string }; 
 }
 
 export const SavedPage = ({ setView, globalCurrency }: SavedPageProps) => {
   const [favorites, setFavorites] = useState<SavedItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [rates, setRates] = useState<any>({ MYR: 1 });
+  const [rates, setRates] = useState<Record<string, number>>({ MYR: 1 });
 
   // SAFE EXTRACTION: Prevent white screen if globalCurrency is undefined
   const currencyInfo = globalCurrency?.code || 'RM | MYR';
@@ -48,7 +48,7 @@ export const SavedPage = ({ setView, globalCurrency }: SavedPageProps) => {
   // Firebase Listener
   useEffect(() => {
     if (!auth.currentUser) {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 0);
       return;
     }
 

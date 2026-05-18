@@ -5,19 +5,28 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { translations } from '../utils/translations';
 import '../styles/Cashback.css';
 
-export const Cashback = ({ setLocalView, balance, setBalance, symbol, globalLang, bookings = [] }: any) => {
+interface CashbackProps {
+  setLocalView: (v: string) => void;
+  balance: number;
+  setBalance: React.Dispatch<React.SetStateAction<number>>;
+  symbol: string;
+  globalLang: string;
+  bookings: Record<string, unknown>[];
+}
+
+export const Cashback = ({ setLocalView, balance, setBalance, symbol, globalLang, bookings = [] }: CashbackProps) => {
   const [isClaiming, setIsClaiming] = useState(false);
   const t = translations[globalLang || 'en'];
 
   // 1. 过滤出待领取的订单 (已完成且未领取)
   const pendingOrders = useMemo(() => {
     if (!bookings || !Array.isArray(bookings)) return [];
-    return bookings.filter((b: any) => b.status === 'past' && b.cashbackClaimed !== true);
+    return bookings.filter((b) => b.status === 'past' && b.cashbackClaimed !== true);
   }, [bookings]);
 
   // 计算待领取总额
   const totalPendingAmount = useMemo(() => {
-    return pendingOrders.reduce((sum: number, b: any) => {
+    return pendingOrders.reduce((sum: number, b) => {
       const amount = Number(b.cashbackAmount) || (Number(b.price) * 0.05) || 0;
       return sum + amount;
     }, 0);
@@ -26,7 +35,7 @@ export const Cashback = ({ setLocalView, balance, setBalance, symbol, globalLang
   // 历史记录
   const recentTransactions = useMemo(() => {
     if (!bookings || !Array.isArray(bookings)) return [];
-    return bookings.filter((b: any) => b.status === 'past');
+    return bookings.filter((b) => b.status === 'past');
   }, [bookings]);
 
   // --- 核心修复：点击领取功能 ---
@@ -40,8 +49,8 @@ export const Cashback = ({ setLocalView, balance, setBalance, symbol, globalLang
     setIsClaiming(true);
     try {
       // 在 Firebase 中更新所有相关订单的状态
-      const updatePromises = pendingOrders.map((order: any) => {
-        const orderRef = doc(db, "Booking", order.id);
+      const updatePromises = pendingOrders.map((order) => {
+        const orderRef = doc(db, "Booking", order.id as string);
         return updateDoc(orderRef, { cashbackClaimed: true });
       });
 
@@ -129,12 +138,12 @@ export const Cashback = ({ setLocalView, balance, setBalance, symbol, globalLang
               <span>No transactions yet</span>
             </div>
           ) : (
-            recentTransactions.map((b: any) => {
+            recentTransactions.map((b) => {
               const displayAmount = Number(b.cashbackAmount) || (Number(b.price) * 0.05) || 0;
               return (
-                <div key={b.id} className="ui-row no-click">
+                <div key={b.id as string} className="ui-row no-click">
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span className="row-title" style={{ fontSize: '14px' }}>{b.name || b.hotelName}</span>
+                    <span className="row-title" style={{ fontSize: '14px' }}>{(b.name as string) || (b.hotelName as string)}</span>
                     <span style={{ fontSize: '11px', color: b.cashbackClaimed ? '#22c55e' : '#888' }}>
                       {b.cashbackClaimed ? 'CLAIMED' : 'PAST'}
                     </span>

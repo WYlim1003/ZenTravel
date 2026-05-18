@@ -6,11 +6,11 @@ import '../styles/RefundPage.css';
 
 interface RefundPageProps {
   bookingId: string;
-  setView: (view: any, id?: string) => void;
+  setView: (view: string, id?: string) => void;
 }
 
 export const RefundPage = ({ bookingId, setView }: RefundPageProps) => {
-  const [item, setItem] = useState<any>(null);
+  const [item, setItem] = useState<Record<string, unknown> | null>(null);
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -21,9 +21,9 @@ export const RefundPage = ({ bookingId, setView }: RefundPageProps) => {
     "Personal medical reasons"
   ];
 
-  const formatDisplayDate = (val: any) => {
+  const formatDisplayDate = (val: string | number | { seconds: number }) => {
     if (!val) return "No Date";
-    if (typeof val === 'object' && val.seconds) {
+    if (typeof val === 'object' && 'seconds' in val) {
       return new Date(val.seconds * 1000).toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',
